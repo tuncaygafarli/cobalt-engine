@@ -31,6 +31,7 @@
   <ItemGroup>
     <None Include="README.md" />
     <None Include=".gitignore" />
+    <None Include="Assets\Sounds\kenney\tone1.ogg" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Physics\CircleObject.h">
@@ -42,5 +43,8 @@
     <ClInclude Include="Graphics\ParticleSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Assets\Sounds\kenney\init.txt" />
   </ItemGroup>
 </Project>

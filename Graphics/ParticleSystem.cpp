@@ -5,7 +5,7 @@
 
 #define PI 3.14159265358979323846f
 #define GRAVITY 9.8f * 100.f
-#define RESTITUTION 0.8f
+#define RESTITUTION 0.4f
 
 using namespace std;
 using namespace sf;

@@ -26,12 +26,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="Assets\Sounds\kenney\tone1.ogg" />
     <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Graphics\ParticleSystem.h" />
     <ClInclude Include="Managers\SoundManager.h" />
     <ClInclude Include="Physics\CircleObject.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Assets\Sounds\kenney\init.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

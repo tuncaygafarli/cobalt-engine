@@ -12,5 +12,5 @@ public:
 	void playHitSound(const std::string& path);
 
 private:
-	std::vector<std::pair<sf::SoundBuffer, sf::Sound>> soundInstances;
+	std::vector<sf::Sound> activeSounds;
 };

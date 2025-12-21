@@ -27,7 +27,7 @@ int main()
     Color::White,
     };
 
-    Music sound("Assets/Sounds/kenney/tone1.ogg");
+    SoundManager soundManager;
 
     int currentIndex = 0;
     float colorChangeTimer = 0;
@@ -71,7 +71,7 @@ int main()
                 {
                     float KE = circles[i].calculateKEnergy();
                     particles.createBurst(circles[i].position, colors[currentIndex], KE);
-                    sound.play();
+                    soundManager.playHitSound("Assets/Sounds/kenney/tone1.ogg");
                 }
 
                 for (int j = i + 1; j < circles.size(); j++) 
