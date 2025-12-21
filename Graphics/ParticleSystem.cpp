@@ -35,7 +35,7 @@ void ParticleSystem::createBurst(Vector2f position, Color color, float amount)
 			true,
 			10.f,
 			15.f + (rand() % 20)
-			});
+		});
 	}
 }
 

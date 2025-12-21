@@ -13,6 +13,8 @@ void SoundManager::playHitSound(const std::string& path)
 		std::cout << "Failed to load sound file." << std::endl;
 	}
 
+	// TODO : Fix unused heap memory usage by implementing "SoundManager::update()"
+
 	activeSounds.emplace_back(buffer);
 	activeSounds.back().setVolume(100.f);
 	activeSounds.back().play();
