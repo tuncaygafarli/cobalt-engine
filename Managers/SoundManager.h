@@ -10,6 +10,7 @@ class SoundManager
 
 public:
 	void playHitSound(const std::string& path);
+	void clearStoppedSounds();
 
 private:
 	std::vector<sf::Sound> activeSounds;

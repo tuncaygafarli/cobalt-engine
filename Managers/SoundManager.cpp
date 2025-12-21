@@ -13,9 +13,24 @@ void SoundManager::playHitSound(const std::string& path)
 		std::cout << "Failed to load sound file." << std::endl;
 	}
 
-	// TODO : Fix unused heap memory usage by implementing "SoundManager::update()"
+	// TODO : Fix unused heap memory usage by implementing "SoundManager::update()" 
+	// Instead of implementing seperate function, maybe we can just remove the unused sound objects before emplacing new one?
+
+	clearStoppedSounds();
 
 	activeSounds.emplace_back(buffer);
 	activeSounds.back().setVolume(100.f);
 	activeSounds.back().play();
+}
+
+void SoundManager::clearStoppedSounds()
+{
+	for (auto it = activeSounds.begin(); it != activeSounds.end();) {
+		if (it->getStatus() == sf::Sound::Status::Stopped) {
+			it = activeSounds.erase(it);
+			std::cout << "Deleted stopped sound.\n";
+			continue;
+		}
+		it++;
+	}
 }

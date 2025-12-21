@@ -21,7 +21,6 @@ struct CircleObject {
 
     CircleObject(float r = 30.f, Vector2f pos = { 0,0 }, Vector2f vel = { 0,0 });
 
-    // Method declarations only
     float calculateArea() const;
     float calculateKEnergy();
     void updateSpeed(float deltaTime);

@@ -35,7 +35,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.x - radius <= 0) {
         position.x = radius;
         velocity.x = -velocity.x * RESTITUTION;
-        cout << "Hit left wall with energy: " << calculateKEnergy() << "J" << endl;
+        cout << "Hit left wall with energy: " << calculateKEnergy() << "J\n";
         collided = true;
     }
 
@@ -43,7 +43,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.x + radius >= windowWidth) {
         position.x = windowWidth - radius;
         velocity.x = -velocity.x * RESTITUTION;
-        cout << "Hit right wall with energy: " << calculateKEnergy() << "J" << endl;
+        cout << "Hit right wall with energy: " << calculateKEnergy() << "J\n";
         collided = true;
     }
 
@@ -51,7 +51,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.y - radius <= 0) {
         position.y = radius;
         velocity.y = -velocity.y * RESTITUTION;
-        cout << "Hit ceiling with energy: " << calculateKEnergy() << "J" << endl;
+        cout << "Hit ceiling with energy: " << calculateKEnergy() << "J\n";
         collided = true;
     }
 
@@ -59,7 +59,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.y + radius >= windowHeight) {
         position.y = windowHeight - radius;
         velocity.y = -velocity.y * RESTITUTION;
-        cout << "Hit floor with energy: " << calculateKEnergy() << "J" << endl;
+        cout << "Hit floor with energy: " << calculateKEnergy() << "J\n";
         collided = true;
     }
 
