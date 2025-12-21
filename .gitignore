@@ -1,2 +1,36 @@
-*.vcxproj.*
-x64/*
+﻿# Visual Studio user-specific files
+.vs/
+*.vcxproj.user
+*.sln.docstates
+*.suo
+*.user
+*.userosscache
+*.sdf
+*.opensdf
+*.db
+
+# Build directories
+Debug/
+Release/
+x64/
+x86/
+build/
+out/
+bin/
+obj/
+*.obj
+*.pch
+*.pdb
+*.ilk
+*.log
+*.idb
+*.tlog
+
+# Output files
+*.exe
+*.dll
+*.lib
+*.exp
+*.cache
+
+Assets/   ← Remove or comment this if you want to track assets
