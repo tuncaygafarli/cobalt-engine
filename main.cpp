@@ -70,7 +70,7 @@ int main()
                 if (circles[i].handleBoundsCollision(WIDTH, HEIGHT))
                 {
                     float KE = circles[i].calculateKEnergy();
-                    particles.createBurst(circles[i].position, colors[currentIndex], KE);
+                    particles.createBurst(circles[i].position, colors[currentIndex], KE, circles[i].radius / 8.f);
                     soundManager.playHitSound("Assets/Sounds/kenney/tone1.ogg");
                 }
 
@@ -79,7 +79,7 @@ int main()
                     if (circles[i].checkCollision(circles[j]))
                     {
                         float KE = circles[i].calculateKEnergy();
-                        particles.createBurst(circles[i].position, colors[currentIndex], KE);
+                        particles.createBurst(circles[i].position, colors[currentIndex], KE, circles[i].radius / 8.f);
                         circles[i].handleBallsCollision(circles[j]);
                     }
                 }
@@ -139,7 +139,7 @@ int main()
         particles.drawParticleShadow(window);
 
         for (int i = 0; i < circles.size(); i++) {
-            circles[i].drawShadow(window, WIDTH, HEIGHT, deltaTime);
+            circles[i].drawShadow(window, deltaTime);
             window.draw(shapes[i]);
         }
         window.display();

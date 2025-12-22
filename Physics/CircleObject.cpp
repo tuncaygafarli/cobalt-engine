@@ -1,5 +1,8 @@
 #include "circleObject.h"
 
+#define PI              3.14159265359f
+#define GRAVITY         9.8f * 100.f
+
 CircleObject::CircleObject(float r, Vector2f pos, Vector2f vel)
     : radius(r), position(pos), velocity(vel) {
 }
@@ -10,7 +13,7 @@ float CircleObject::calculateArea() const {
 
 float CircleObject::calculateKEnergy() {
     float speedSquared = velocity.x * velocity.x + velocity.y * velocity.y;
-    return 0.5f * MASS * speedSquared;
+    return 0.5f * mass * speedSquared;
 }
 
 void CircleObject::updateSpeed(float deltaTime) {
@@ -35,7 +38,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.x - radius <= 0) {
         position.x = radius;
         velocity.x = -velocity.x * RESTITUTION;
-        cout << "Hit left wall with energy: " << calculateKEnergy() << "J\n";
+
         collided = true;
     }
 
@@ -43,7 +46,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.x + radius >= windowWidth) {
         position.x = windowWidth - radius;
         velocity.x = -velocity.x * RESTITUTION;
-        cout << "Hit right wall with energy: " << calculateKEnergy() << "J\n";
+
         collided = true;
     }
 
@@ -51,7 +54,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.y - radius <= 0) {
         position.y = radius;
         velocity.y = -velocity.y * RESTITUTION;
-        cout << "Hit ceiling with energy: " << calculateKEnergy() << "J\n";
+
         collided = true;
     }
 
@@ -59,7 +62,7 @@ bool CircleObject::handleBoundsCollision(float windowWidth, float windowHeight) 
     if (position.y + radius >= windowHeight) {
         position.y = windowHeight - radius;
         velocity.y = -velocity.y * RESTITUTION;
-        cout << "Hit floor with energy: " << calculateKEnergy() << "J\n";
+
         collided = true;
     }
 
@@ -76,45 +79,64 @@ bool CircleObject::checkCollision(const CircleObject& other) const {
     return distanceSquared < radiusSum * radiusSum;
 }
 
+/*
+   Applied derivation of two dimensional solution for impulse here
+
+   Source : https://en.wikipedia.org/wiki/Elastic_collision
+*/ 
+
 void CircleObject::handleBallsCollision(CircleObject& other) {
-    std::swap(velocity, other.velocity);
+    Vector2f deltaPos = position - other.position;
+    float distanceSquared = deltaPos.x * deltaPos.x + deltaPos.y * deltaPos.y;
+    float distance = std::sqrt(distanceSquared);
+    float minDistance = radius + other.radius;
 
-    Vector2f diff = other.position - position;
-    float distance = sqrt(diff.x * diff.x + diff.y * diff.y);
+    const float SLOP = 0.001f;  // applying tiny tolerance to avoid sticking because of slight precise in float numbers
+    if (distanceSquared >= (minDistance + SLOP) * (minDistance + SLOP)) {
+        return;
+    }
 
-    if (distance > 0) {
-        float overlap = (radius + other.radius - distance) * 0.5f;
-        diff /= distance;
+    Vector2f normal = deltaPos / distance;
 
-        position -= diff * overlap;
-        other.position += diff * overlap;
+    Vector2f relativeVel = velocity - other.velocity;
+    float approachSpeed = normal.x * relativeVel.x + normal.y * relativeVel.y;
+
+    if (approachSpeed > -SLOP) return; // same slop for float-precise number approach
+
+    float totalMass = mass + other.mass;
+    float reducedMass = (mass * other.mass) / totalMass;
+    float impulseMagnitude = -2.0f * reducedMass * approachSpeed;
+
+    Vector2f impulse = normal * impulseMagnitude;
+
+    velocity += impulse * (1.0f / mass);
+    other.velocity -= impulse * (1.0f / other.mass);
+
+    float overlap = minDistance - distance;
+    if (overlap > SLOP) {
+        Vector2f separation = normal * ((overlap - SLOP) * 0.5f);
+        position += separation;
+        other.position -= separation;
     }
 }
 
-void CircleObject::drawShadow(RenderWindow& window, int windowWidth, int windowHeight, float deltaTime) {
-    float light_origin_x = windowWidth / 2;
-    float light_origin_y = windowHeight / 2;
+void CircleObject::drawShadow(RenderWindow& window, float deltaTime) {
+    float light_origin_x = 0;
+    float light_origin_y = 0;
 
-    int base_offset = 5;
-    Vector2f offsetMultiplier(1, 1);
+    Vector2f lightToObject = position - Vector2f(light_origin_x, light_origin_y);
+    float distanceFromLight = lightToObject.length();
 
-    if (position.x < light_origin_x && position.y > light_origin_y) {
-        offsetMultiplier = Vector2f(-1, 1);
-    }
-    else if (position.x > light_origin_x && position.y > light_origin_y) {
-        offsetMultiplier = Vector2f(1, 1);
-    }
-    else if (position.x < light_origin_x && position.y < light_origin_y) {
-        offsetMultiplier = Vector2f(-1, -1);
-    }
-    else if (position.x > light_origin_x && position.y < light_origin_y) {
-        offsetMultiplier = Vector2f(1, -1);
-    }
+    if (distanceFromLight < 0.1f) return;
 
-    Vector2f shadowOffset(
-        base_offset * offsetMultiplier.x,
-        base_offset * offsetMultiplier.y
-    );
+    Vector2f direction = lightToObject / distanceFromLight;
+
+    float baseShadowLength = 10.0f;
+
+    float distanceFactor = 1.0f + (distanceFromLight / 1000.0f);
+    float shadowLength = baseShadowLength * distanceFactor;
+
+    Vector2f shadowOffset = direction * shadowLength;
 
     CircleShape shadow(radius * 1.1f);
     shadow.setPosition(position + shadowOffset);

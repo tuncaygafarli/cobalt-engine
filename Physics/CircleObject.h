@@ -15,7 +15,7 @@ struct CircleObject {
     Vector2f acceleration = { 0.f, GRAVITY };
     float radius;
 
-    const float MASS = 5.f;
+    const float mass = 5.f;
     const float RESTITUTION = 0.8f;
     bool hasCollided = false;
 
@@ -29,5 +29,5 @@ struct CircleObject {
     bool handleBoundsCollision(float windowWidth, float windowHeight);
     bool checkCollision(const CircleObject& other) const;
     void handleBallsCollision(CircleObject& other);
-    void drawShadow(RenderWindow& window, int windowWidth, int windowHeight, float deltaTime);
+    void drawShadow(RenderWindow& window, float deltaTime);
 };
