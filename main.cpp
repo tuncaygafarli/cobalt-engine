@@ -7,17 +7,14 @@
 #include "Graphics/ParticleSystem.h"
 #include "Managers/SoundManager.h"
 
-using namespace sf;
-using namespace std;
-
 #define WIDTH           800
 #define HEIGHT          800
 
 int main()
 {   
-    RenderWindow window(VideoMode({ WIDTH, HEIGHT }), "Cobalt 2D");
+    sf::RenderWindow window(VideoMode({ WIDTH, HEIGHT }), "Cobalt 2D");
 
-    Color colors[7] = {
+    sf::Color colors[7] = {
     Color::Red,
     Color::Green,
     Color::Blue,
@@ -32,8 +29,8 @@ int main()
     int currentIndex = 0;
     float colorChangeTimer = 0;
 
-    vector<CircleObject> circles;
-    vector<CircleShape> shapes;
+    std::vector<CircleObject> circles;
+    std::vector<CircleShape> shapes;
     ParticleSystem particles;
 
     float randomPosX = 100 + rand() % (WIDTH - 200);
@@ -45,11 +42,13 @@ int main()
 
     circles.push_back(firstCircle);
 
-    CircleShape firstShape(firstCircle.radius);
+    sf::CircleShape firstShape(firstCircle.radius);
     firstShape.setFillColor(colors[rand() % 7]);
     firstShape.setOrigin(Vector2f(firstCircle.radius, firstCircle.radius));
     firstShape.setPosition(firstCircle.position);
     shapes.push_back(firstShape);
+
+    bool isDragging = true;
 
     Clock clock;
 
@@ -66,7 +65,7 @@ int main()
         }
 
         for (int i = 0; i < circles.size(); i++) {
-
+                // bound collision handling
                 if (circles[i].handleBoundsCollision(WIDTH, HEIGHT))
                 {
                     float KE = circles[i].calculateKEnergy();
@@ -74,16 +73,18 @@ int main()
                     soundManager.playHitSound("Assets/Sounds/kenney/tone1.ogg");
                 }
 
+                // circle collision handling
                 for (int j = i + 1; j < circles.size(); j++) 
                 {
                     if (circles[i].checkCollision(circles[j]))
                     {
                         float KE = circles[i].calculateKEnergy();
-                        particles.createBurst(circles[i].position, colors[currentIndex], KE, circles[i].radius / 8.f);
                         circles[i].handleBallsCollision(circles[j]);
+                        particles.createBurst(circles[i].position, colors[currentIndex], KE, circles[i].radius / 8.f);
                     }
                 }
 
+            // updating shapes here
             shapes[i].setPosition(circles[i].position);
             shapes[i].setFillColor(colors[currentIndex]);
         }
@@ -95,8 +96,10 @@ int main()
                 window.close();
             }
 
-            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
-            {
+            
+            else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>()) {
+
+                // make ball jump to the left
                 if (mouseButtonPressed->button == sf::Mouse::Button::Left)
                 {
                     for (int i = 0; i < circles.size(); i++) {
@@ -107,6 +110,7 @@ int main()
                     }
                 }
 
+                // make ball jump to the right
                 if (mouseButtonPressed->button == sf::Mouse::Button::Right)
                 {
                     for (int i = 0; i < circles.size(); i++) {
@@ -118,19 +122,50 @@ int main()
                 }
             }
 
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+            // new ball creation
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::N))
             {
                 CircleObject newCircle(30.f,
                     Vector2f(randomPosX, randomPosY),
                     Vector2f((rand() % 200) - 100, 0));
                 circles.push_back(newCircle);
 
-                CircleShape newShape(newCircle.radius);
+                sf::CircleShape newShape(newCircle.radius);
                 newShape.setFillColor(colors[rand() % 7]);
                 newShape.setOrigin(Vector2f(newCircle.radius, newCircle.radius));
                 newShape.setPosition(newCircle.position);
                 shapes.push_back(newShape);
             }
+
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+            {
+                for (int i = 0; i < circles.size(); i++) {
+                    circles[i].velocity.y = -500.f;
+                }
+            }
+
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A))
+            {
+                for (int i = 0; i < circles.size(); i++) {
+                    circles[i].velocity.x = -400.f;
+                }
+            }
+
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D))
+            {
+                for (int i = 0; i < circles.size(); i++) {
+                    circles[i].velocity.x = 400.f;
+                }
+            }
+
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+            {
+                for (int i = 0; i < circles.size(); i++) {
+                    circles[i].velocity.y = 400.f;
+                }
+            }
+
+
         }
 
         // Draw

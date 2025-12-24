@@ -84,8 +84,9 @@ bool CircleObject::checkCollision(const CircleObject& other) const {
 
    Source : https://en.wikipedia.org/wiki/Elastic_collision
 */ 
-
-void CircleObject::handleBallsCollision(CircleObject& other) {
+    
+void CircleObject::handleBallsCollision(CircleObject& other) 
+{
     Vector2f deltaPos = position - other.position;
     float distanceSquared = deltaPos.x * deltaPos.x + deltaPos.y * deltaPos.y;
     float distance = std::sqrt(distanceSquared);

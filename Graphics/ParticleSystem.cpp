@@ -76,6 +76,7 @@ void ParticleSystem::drawParticles(RenderWindow& window)
 	}
 }
 
+// implementing shadows with dark circles by using Ray Tracing
 void ParticleSystem::drawParticleShadow(RenderWindow& window)
 {
 	for (auto& p : particles)
@@ -88,7 +89,7 @@ void ParticleSystem::drawParticleShadow(RenderWindow& window)
 
 		if (distanceFromLight < 0.1f) return;
 
-		Vector2f direction = lightToObject / distanceFromLight;
+		Vector2f direction = lightToObject / distanceFromLight; // returns a unit vector which gives us only the direction
 
 		float baseShadowLength = 15.0f;
 
@@ -151,4 +152,42 @@ bool ParticleSystem::handleBoundsCollision(float windowWidth, float windowHeight
 	}
 
 	return anyCollision;
+}
+
+void ParticleSystem::handleBallsCollision(Particle& other)
+{
+	for (auto& p : particles) {
+		Vector2f deltaPos = p.position - other.position;
+		float distanceSquared = deltaPos.x * deltaPos.x + deltaPos.y * deltaPos.y;
+		float distance = std::sqrt(distanceSquared);
+		float minDistance = p.size + other.size;
+
+		const float SLOP = 0.001f;  // applying tiny tolerance to avoid sticking because of slight precise in float numbers
+		if (distanceSquared >= (minDistance + SLOP) * (minDistance + SLOP)) {
+			return;
+		}
+
+		Vector2f normal = deltaPos / distance;
+
+		Vector2f relativeVel = p.velocity - other.velocity;
+		float approachSpeed = normal.x * relativeVel.x + normal.y * relativeVel.y;
+
+		if (approachSpeed > -SLOP) return; // same slop for float-precise number approach
+
+		float totalMass = p.mass + other.mass;
+		float reducedMass = (p.mass * other.mass) / totalMass;
+		float impulseMagnitude = -2.0f * reducedMass * approachSpeed;
+
+		Vector2f impulse = normal * impulseMagnitude;
+
+		p.velocity += impulse * (1.0f / p.mass);
+		other.velocity -= impulse * (1.0f / other.mass);
+
+		float overlap = minDistance - distance;
+		if (overlap > SLOP) {
+			Vector2f separation = normal * ((overlap - SLOP) * 0.5f);
+			p.position += separation;
+			other.position -= separation;
+		}
+	}
 }

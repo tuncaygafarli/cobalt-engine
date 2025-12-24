@@ -7,13 +7,6 @@
 class ParticleSystem
 {
 public:
-	void createBurst(sf::Vector2f position, sf::Color color, float amount, float size);
-	void updateParticles(float deltaTime);
-	void drawParticles(sf::RenderWindow& window);
-	void drawParticleShadow(sf::RenderWindow& window);
-	bool handleBoundsCollision(float windowWidth, float windowHeight);
-
-private:
 	struct Particle
 	{
 		sf::Vector2f position;
@@ -22,7 +15,16 @@ private:
 		bool hasCollided;
 		float lifetime;
 		float size;
+		float mass;
 	};
 
+	void createBurst(sf::Vector2f position, sf::Color color, float amount, float size);
+	void updateParticles(float deltaTime);
+	void drawParticles(sf::RenderWindow& window);
+	void drawParticleShadow(sf::RenderWindow& window);
+	bool handleBoundsCollision(float windowWidth, float windowHeight);
+	void handleBallsCollision(Particle& other);
+
+private:
 	std::vector<Particle> particles;
 };
