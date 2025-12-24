@@ -2,43 +2,49 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <random>
 
 #define PI 3.14159265358979323846f
 #define GRAVITY 9.8f * 100.f
 #define RESTITUTION 0.4f
-
-using namespace std;
-using namespace sf;
 
 /*
 	Creates particles only and only when there's a collision, which is constantly checked on game loop.
 	Since we don't have to load all these particles to avoid heavy memory usage, we can normalize them by using Weber-Fechner Law :DDDD
 */ 
 
-void ParticleSystem::createBurst(Vector2f position, Color color, float amount, float size)
+static std::mt19937 rng(std::random_device{}());
+std::uniform_real_distribution<float> angleDist(0.f, 360.f);
+std::uniform_real_distribution<float> speedDist(50.f, 200.f);
+
+void ParticleSystem::createBurst(sf::Vector2f position, sf::Color color, float amount, float size)
 {
 	float maxParticles = 50.f;
 	float minKE = 100.f;
 	float maxKE = 50000.f;
 
-	amount = max(amount, minKE);
+	amount = std::max(amount, minKE);
 	float normalized = log(amount / minKE) / log(maxKE / minKE); // weber-fechner
-	normalized = min(max(normalized, 0.f), 1.f);
+	normalized = std::min(std::max(normalized, 0.f), 1.f);
 
 	float particleCount = normalized * maxParticles;
 
 	for (float i = 0; i < particleCount; i++)
 	{
-		float angleDeg = rand() % 360;
+		float angleDeg = angleDist(rng);
 		float angleRad = angleDeg * (PI / 180.f);
-		float speed = 50 + (rand() % 150);
+		float speed = speedDist(rng);
+
+		sf::Vector2f particleVelocity(cos(angleRad) * speed, sin(angleRad) * speed);
+
+		float lifetime = std::sqrt(2 * position.y / GRAVITY);
 
 		particles.push_back({
 			position,
-			Vector2f(cos(angleRad) * speed, sin(angleRad) * speed), // creates random burst direction for particles
+			particleVelocity, // creates random burst direction for particles
 			color,
 			true,
-			10.f,
+			lifetime,
 			size + (rand() % 20)
 		});
 	}
@@ -62,46 +68,46 @@ void ParticleSystem::updateParticles(float deltaTime)
 	}
 }
 
-void ParticleSystem::drawParticles(RenderWindow& window)
+void ParticleSystem::drawParticles(sf::RenderWindow& window)
 {
 	for (auto& p : particles)
 	{
-		CircleShape particle(p.size);
+		sf::CircleShape particle(p.size);
 		particle.setPosition(p.position);
-		particle.setOrigin(Vector2f(p.size, p.size));
+		particle.setOrigin(sf::Vector2f(p.size, p.size));
 
-		particle.setFillColor(Color(p.color.r, p.color.g, p.color.b));
+		particle.setFillColor(sf::Color(p.color.r, p.color.g, p.color.b));
 
 		window.draw(particle);
 	}
 }
 
 // implementing shadows with dark circles by using Ray Tracing
-void ParticleSystem::drawParticleShadow(RenderWindow& window)
+void ParticleSystem::drawParticleShadow(sf::RenderWindow& window)
 {
 	for (auto& p : particles)
 	{
 		float light_origin_x = 0;
 		float light_origin_y = 0;
 
-		Vector2f lightToObject = p.position - Vector2f(light_origin_x, light_origin_y);
+		sf::Vector2f lightToObject = p.position - sf::Vector2f(light_origin_x, light_origin_y);
 		float distanceFromLight = lightToObject.length();
 
 		if (distanceFromLight < 0.1f) return;
 
-		Vector2f direction = lightToObject / distanceFromLight; // returns a unit vector which gives us only the direction
+		sf::Vector2f direction = lightToObject / distanceFromLight; // returns a unit vector which gives us only the direction
 
 		float baseShadowLength = 15.0f;
 
 		float distanceFactor = 1.0f + (distanceFromLight / 500.f);
 		float shadowLength = baseShadowLength * distanceFactor;
 
-		Vector2f shadowOffset = direction * shadowLength;
+		sf::Vector2f shadowOffset = direction * shadowLength;
 
-		CircleShape shadow(p.size * 1.1f);
+		sf::CircleShape shadow(p.size * 1.1f);
 		shadow.setPosition(p.position + shadowOffset);
-		shadow.setFillColor(Color(0, 0, 0, 100));
-		shadow.setOrigin(Vector2f(p.size * 1.1f, p.size * 1.1f));
+		shadow.setFillColor(sf::Color(0, 0, 0, 100));
+		shadow.setOrigin(sf::Vector2f(p.size * 1.1f, p.size * 1.1f));
 
 		window.draw(shadow);
 	}
@@ -157,7 +163,7 @@ bool ParticleSystem::handleBoundsCollision(float windowWidth, float windowHeight
 void ParticleSystem::handleBallsCollision(Particle& other)
 {
 	for (auto& p : particles) {
-		Vector2f deltaPos = p.position - other.position;
+		sf::Vector2f deltaPos = p.position - other.position;
 		float distanceSquared = deltaPos.x * deltaPos.x + deltaPos.y * deltaPos.y;
 		float distance = std::sqrt(distanceSquared);
 		float minDistance = p.size + other.size;
@@ -167,9 +173,9 @@ void ParticleSystem::handleBallsCollision(Particle& other)
 			return;
 		}
 
-		Vector2f normal = deltaPos / distance;
+		sf::Vector2f normal = deltaPos / distance;
 
-		Vector2f relativeVel = p.velocity - other.velocity;
+		sf::Vector2f relativeVel = p.velocity - other.velocity;
 		float approachSpeed = normal.x * relativeVel.x + normal.y * relativeVel.y;
 
 		if (approachSpeed > -SLOP) return; // same slop for float-precise number approach
@@ -178,14 +184,14 @@ void ParticleSystem::handleBallsCollision(Particle& other)
 		float reducedMass = (p.mass * other.mass) / totalMass;
 		float impulseMagnitude = -2.0f * reducedMass * approachSpeed;
 
-		Vector2f impulse = normal * impulseMagnitude;
+		sf::Vector2f impulse = normal * impulseMagnitude;
 
 		p.velocity += impulse * (1.0f / p.mass);
 		other.velocity -= impulse * (1.0f / other.mass);
 
 		float overlap = minDistance - distance;
 		if (overlap > SLOP) {
-			Vector2f separation = normal * ((overlap - SLOP) * 0.5f);
+			sf::Vector2f separation = normal * ((overlap - SLOP) * 0.5f);
 			p.position += separation;
 			other.position -= separation;
 		}
